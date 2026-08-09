@@ -68,7 +68,10 @@ function EventsPage() {
   );
 
   async function doExport(kind: "pdf" | "excel") {
-    if (!rows.length) return toast.error(t("no_data"));
+    if (!rows.length) {
+      toast.error(t("no_data"));
+      return;
+    }
     const name = `sentinel-incidents-${new Date().toISOString().slice(0, 10)}`;
     if (kind === "excel") await exportExcel(rows, name);
     else await exportPdf(rows, name, "SENTINEL — Incident report", `${rows.length} events · ${new Date().toLocaleString(locale)}`);
