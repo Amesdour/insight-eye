@@ -62,7 +62,7 @@ export const analyzeFootage = createServerFn({ method: "POST" })
       confidence: d.confidence,
       severity: d.severity,
       description: d.description,
-      details: d.details,
+      details: d.details as Record<string, never>,
     }));
 
     let inserted: { id: string; entity: string; subtype: string | null; confidence: number; camera_id: string | null }[] =
