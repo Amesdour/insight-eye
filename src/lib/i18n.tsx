@@ -371,7 +371,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (stored && LOCALES.some((l) => l.code === stored)) setLocaleState(stored);
   }, []);
 
-  const dir = locale === "ar" ? "rtl" : "ltr";
+  const dir: "ltr" | "rtl" = locale === "ar" ? "rtl" : "ltr";
 
   useEffect(() => {
     document.documentElement.lang = locale;
