@@ -24,6 +24,8 @@ export type Database = {
           id: string
           min_confidence: number
           name: string
+          notify_emails: string[]
+          notify_phones: string[]
           severity: Database["public"]["Enums"]["severity"]
           subtype: string | null
           tenant_id: string
@@ -37,6 +39,8 @@ export type Database = {
           id?: string
           min_confidence?: number
           name: string
+          notify_emails?: string[]
+          notify_phones?: string[]
           severity?: Database["public"]["Enums"]["severity"]
           subtype?: string | null
           tenant_id: string
@@ -50,6 +54,8 @@ export type Database = {
           id?: string
           min_confidence?: number
           name?: string
+          notify_emails?: string[]
+          notify_phones?: string[]
           severity?: Database["public"]["Enums"]["severity"]
           subtype?: string | null
           tenant_id?: string
@@ -123,37 +129,136 @@ export type Database = {
           },
         ]
       }
+      camera_access: {
+        Row: {
+          camera_id: string
+          created_at: string
+          id: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          camera_id: string
+          created_at?: string
+          id?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          camera_id?: string
+          created_at?: string
+          id?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "camera_access_camera_id_fkey"
+            columns: ["camera_id"]
+            isOneToOne: false
+            referencedRelation: "cameras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "camera_access_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      camera_health: {
+        Row: {
+          camera_id: string
+          checked_at: string
+          id: string
+          latency_ms: number | null
+          message: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          camera_id: string
+          checked_at?: string
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          status: string
+          tenant_id: string
+        }
+        Update: {
+          camera_id?: string
+          checked_at?: string
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "camera_health_camera_id_fkey"
+            columns: ["camera_id"]
+            isOneToOne: false
+            referencedRelation: "cameras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "camera_health_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cameras: {
         Row: {
           created_at: string
           id: string
+          is_live: boolean
+          last_error: string | null
+          last_seen_at: string | null
           location: string | null
           name: string
+          poll_interval_seconds: number
           rtsp_url: string | null
           source_type: string
           status: string
+          stream_status: string
           tenant_id: string
           zone: string | null
         }
         Insert: {
           created_at?: string
           id?: string
+          is_live?: boolean
+          last_error?: string | null
+          last_seen_at?: string | null
           location?: string | null
           name: string
+          poll_interval_seconds?: number
           rtsp_url?: string | null
           source_type?: string
           status?: string
+          stream_status?: string
           tenant_id: string
           zone?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          is_live?: boolean
+          last_error?: string | null
+          last_seen_at?: string | null
           location?: string | null
           name?: string
+          poll_interval_seconds?: number
           rtsp_url?: string | null
           source_type?: string
           status?: string
+          stream_status?: string
           tenant_id?: string
           zone?: string | null
         }
@@ -294,6 +399,153 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          tenant_id: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          tenant_id: string
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          tenant_id?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          alert_id: string | null
+          channel: string
+          created_at: string
+          destination: string
+          error: string | null
+          id: string
+          rule_id: string | null
+          sent_at: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          alert_id?: string | null
+          channel: string
+          created_at?: string
+          destination: string
+          error?: string | null
+          id?: string
+          rule_id?: string | null
+          sent_at?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          alert_id?: string | null
+          channel?: string
+          created_at?: string
+          destination?: string
+          error?: string | null
+          id?: string
+          rule_id?: string | null
+          sent_at?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_catalog: {
+        Row: {
+          camera_limit: number
+          label: string
+          onprem_enabled: boolean
+          price_eur_month: number
+          rtsp_enabled: boolean
+          seat_limit: number
+          sort_order: number
+          storage_gb: number
+          tier: Database["public"]["Enums"]["plan_tier"]
+        }
+        Insert: {
+          camera_limit: number
+          label: string
+          onprem_enabled?: boolean
+          price_eur_month: number
+          rtsp_enabled?: boolean
+          seat_limit: number
+          sort_order?: number
+          storage_gb: number
+          tier: Database["public"]["Enums"]["plan_tier"]
+        }
+        Update: {
+          camera_limit?: number
+          label?: string
+          onprem_enabled?: boolean
+          price_eur_month?: number
+          rtsp_enabled?: boolean
+          seat_limit?: number
+          sort_order?: number
+          storage_gb?: number
+          tier?: Database["public"]["Enums"]["plan_tier"]
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -329,36 +581,92 @@ export type Database = {
           },
         ]
       }
+      subscription_events: {
+        Row: {
+          amount_eur: number
+          created_at: string
+          created_by: string | null
+          from_tier: Database["public"]["Enums"]["plan_tier"] | null
+          id: string
+          note: string | null
+          tenant_id: string
+          to_tier: Database["public"]["Enums"]["plan_tier"]
+        }
+        Insert: {
+          amount_eur?: number
+          created_at?: string
+          created_by?: string | null
+          from_tier?: Database["public"]["Enums"]["plan_tier"] | null
+          id?: string
+          note?: string | null
+          tenant_id: string
+          to_tier: Database["public"]["Enums"]["plan_tier"]
+        }
+        Update: {
+          amount_eur?: number
+          created_at?: string
+          created_by?: string | null
+          from_tier?: Database["public"]["Enums"]["plan_tier"] | null
+          id?: string
+          note?: string | null
+          tenant_id?: string
+          to_tier?: Database["public"]["Enums"]["plan_tier"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           active: boolean
+          billing_email: string | null
           camera_limit: number
           created_at: string
+          current_period_end: string | null
           id: string
           name: string
           plan: Database["public"]["Enums"]["plan_tier"]
+          seat_limit: number
           slug: string
           storage_gb: number
+          subscription_status: string
+          trial_ends_at: string
         }
         Insert: {
           active?: boolean
+          billing_email?: string | null
           camera_limit?: number
           created_at?: string
+          current_period_end?: string | null
           id?: string
           name: string
           plan?: Database["public"]["Enums"]["plan_tier"]
+          seat_limit?: number
           slug: string
           storage_gb?: number
+          subscription_status?: string
+          trial_ends_at?: string
         }
         Update: {
           active?: boolean
+          billing_email?: string | null
           camera_limit?: number
           created_at?: string
+          current_period_end?: string | null
           id?: string
           name?: string
           plan?: Database["public"]["Enums"]["plan_tier"]
+          seat_limit?: number
           slug?: string
           storage_gb?: number
+          subscription_status?: string
+          trial_ends_at?: string
         }
         Relationships: []
       }
@@ -396,6 +704,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_camera: { Args: { _camera_id: string }; Returns: boolean }
       current_tenant_id: { Args: never; Returns: string }
       has_role: {
         Args: {
