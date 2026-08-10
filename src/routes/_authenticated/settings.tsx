@@ -130,7 +130,7 @@ function SettingsPage() {
   const planMut = useMutation({
     mutationFn: async (tier: string) => switchPlan({ data: { tier: tier as "pro" } }),
     onSuccess: () => {
-      toast.success(t("saved"));
+      toast.success(t("current_plan"));
       queryClient.invalidateQueries({ queryKey: ["membership"] });
     },
     onError: (e) => toast.error((e as Error).message),
