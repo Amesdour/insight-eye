@@ -279,10 +279,13 @@ export type Database = {
           created_at: string
           description: string | null
           details: Json
+          ended_at: string | null
           entity: Database["public"]["Enums"]["entity_type"]
+          false_positive: boolean
           footage_id: string | null
           id: string
           occurred_at: string
+          occurrence_count: number
           offset_seconds: number | null
           severity: Database["public"]["Enums"]["severity"]
           snapshot_path: string | null
@@ -295,10 +298,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           details?: Json
+          ended_at?: string | null
           entity: Database["public"]["Enums"]["entity_type"]
+          false_positive?: boolean
           footage_id?: string | null
           id?: string
           occurred_at?: string
+          occurrence_count?: number
           offset_seconds?: number | null
           severity?: Database["public"]["Enums"]["severity"]
           snapshot_path?: string | null
@@ -311,10 +317,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           details?: Json
+          ended_at?: string | null
           entity?: Database["public"]["Enums"]["entity_type"]
+          false_positive?: boolean
           footage_id?: string | null
           id?: string
           occurred_at?: string
+          occurrence_count?: number
           offset_seconds?: number | null
           severity?: Database["public"]["Enums"]["severity"]
           snapshot_path?: string | null
@@ -503,6 +512,79 @@ export type Database = {
           },
           {
             foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_runs: {
+        Row: {
+          camera_id: string | null
+          created_at: string
+          detections: number
+          error: string | null
+          estimated_cost_usd: number
+          footage_id: string | null
+          frame_count: number
+          id: string
+          latency_ms: number | null
+          provider: string
+          raw_excerpt: string | null
+          source: string
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          camera_id?: string | null
+          created_at?: string
+          detections?: number
+          error?: string | null
+          estimated_cost_usd?: number
+          footage_id?: string | null
+          frame_count?: number
+          id?: string
+          latency_ms?: number | null
+          provider?: string
+          raw_excerpt?: string | null
+          source?: string
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          camera_id?: string | null
+          created_at?: string
+          detections?: number
+          error?: string | null
+          estimated_cost_usd?: number
+          footage_id?: string | null
+          frame_count?: number
+          id?: string
+          latency_ms?: number | null
+          provider?: string
+          raw_excerpt?: string | null
+          source?: string
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_runs_camera_id_fkey"
+            columns: ["camera_id"]
+            isOneToOne: false
+            referencedRelation: "cameras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_runs_footage_id_fkey"
+            columns: ["footage_id"]
+            isOneToOne: false
+            referencedRelation: "footage"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_runs_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -715,6 +797,10 @@ export type Database = {
       }
       is_super_admin: { Args: never; Returns: boolean }
       is_tenant_admin: { Args: never; Returns: boolean }
+      reconcile_stale_cameras: {
+        Args: { _minutes?: number; _tenant?: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "agent" | "viewer"
