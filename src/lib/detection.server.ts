@@ -156,8 +156,18 @@ function createOnPremProvider(endpoint: string): DetectionProvider {
       if (!response.ok) {
         throw new Error(`On-prem inference failed [${response.status}]: ${await response.text()}`);
       }
-      const json = (await response.json()) as { detections?: Detection[] };
-      return Array.isArray(json.detections) ? json.detections : [];
+      const body = await response.text();
+      let detections: Detection[] | null = null;
+      try {
+        const json = JSON.parse(body) as { detections?: Detection[] };
+        detections = Array.isArray(json.detections) ? json.detections : null;
+      } catch {
+        detections = null;
+      }
+      if (!detections) {
+        return { detections: [], status: "parse_error", raw: body.slice(0, 2000), error: "invalid on-prem payload" };
+      }
+      return { detections, status: "ok", raw: body.slice(0, 2000) };
     },
   };
 }
