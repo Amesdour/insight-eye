@@ -74,7 +74,7 @@ function parseDetections(raw: string, frames: Frame[]): ParseOutcome {
   const allowedSeverity: Severity[] = ["info", "warning", "critical"];
   const maxOffset = frames.length ? Math.max(...frames.map((f) => f.offset)) : 0;
 
-  return list.slice(0, 60).flatMap((item): Detection[] => {
+  const detections = list.slice(0, 60).flatMap((item): Detection[] => {
     const d = item as Record<string, unknown>;
     const entity = String(d['entity'] ?? "") as EntityType;
     if (!allowedEntities.includes(entity)) return [];
