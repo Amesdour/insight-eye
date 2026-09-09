@@ -26,9 +26,17 @@ export type DetectionContext = {
   zone?: string | null;
 };
 
+export type DetectionRun = {
+  detections: Detection[];
+  /** 'ok' | 'parse_error' | 'provider_error' — never treat a non-ok run as "all clear". */
+  status: "ok" | "parse_error" | "provider_error";
+  raw: string;
+  error?: string;
+};
+
 export interface DetectionProvider {
   id: string;
-  detect(frames: Frame[], ctx: DetectionContext): Promise<Detection[]>;
+  detect(frames: Frame[], ctx: DetectionContext): Promise<DetectionRun>;
 }
 
 const SYSTEM_PROMPT = `You are a video surveillance analytics engine for industrial and public sites.
@@ -49,22 +57,24 @@ Return an empty array when nothing of interest is visible. Never invent detectio
 
 type GatewayChoice = { message?: { content?: string } };
 
-function parseDetections(raw: string, frames: Frame[]): Detection[] {
+type ParseOutcome = { ok: boolean; detections: Detection[]; error?: string };
+
+function parseDetections(raw: string, frames: Frame[]): ParseOutcome {
   const match = raw.match(/\{[\s\S]*\}/);
-  if (!match) return [];
+  if (!match) return { ok: false, detections: [], error: "no JSON object in model response" };
   let parsed: unknown;
   try {
     parsed = JSON.parse(match[0]);
-  } catch {
-    return [];
+  } catch (e) {
+    return { ok: false, detections: [], error: `invalid JSON: ${(e as Error).message}` };
   }
   const list = (parsed as { detections?: unknown }).detections;
-  if (!Array.isArray(list)) return [];
+  if (!Array.isArray(list)) return { ok: false, detections: [], error: "missing detections array" };
   const allowedEntities: EntityType[] = ["person", "vehicle", "animal", "object"];
   const allowedSeverity: Severity[] = ["info", "warning", "critical"];
   const maxOffset = frames.length ? Math.max(...frames.map((f) => f.offset)) : 0;
 
-  return list.slice(0, 60).flatMap((item): Detection[] => {
+  const detections = list.slice(0, 60).flatMap((item): Detection[] => {
     const d = item as Record<string, unknown>;
     const entity = String(d['entity'] ?? "") as EntityType;
     if (!allowedEntities.includes(entity)) return [];
@@ -85,6 +95,8 @@ function parseDetections(raw: string, frames: Frame[]): Detection[] {
       },
     ];
   });
+
+  return { ok: true, detections };
 }
 
 function createCloudVisionProvider(apiKey: string): DetectionProvider {
@@ -121,7 +133,13 @@ Frames are given in order with their timestamp offsets in seconds: ${frames.map(
 
       const json = (await response.json()) as { choices?: GatewayChoice[] };
       const text = json.choices?.[0]?.message?.content ?? "";
-      return parseDetections(text, frames);
+      const outcome = parseDetections(text, frames);
+      return {
+        detections: outcome.detections,
+        status: outcome.ok ? "ok" : "parse_error",
+        raw: text.slice(0, 2000),
+        ...(outcome.error ? { error: outcome.error } : {}),
+      };
     },
   };
 }
@@ -138,8 +156,18 @@ function createOnPremProvider(endpoint: string): DetectionProvider {
       if (!response.ok) {
         throw new Error(`On-prem inference failed [${response.status}]: ${await response.text()}`);
       }
-      const json = (await response.json()) as { detections?: Detection[] };
-      return Array.isArray(json.detections) ? json.detections : [];
+      const body = await response.text();
+      let detections: Detection[] | null = null;
+      try {
+        const json = JSON.parse(body) as { detections?: Detection[] };
+        detections = Array.isArray(json.detections) ? json.detections : null;
+      } catch {
+        detections = null;
+      }
+      if (!detections) {
+        return { detections: [], status: "parse_error", raw: body.slice(0, 2000), error: "invalid on-prem payload" };
+      }
+      return { detections, status: "ok", raw: body.slice(0, 2000) };
     },
   };
 }
