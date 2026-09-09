@@ -26,9 +26,17 @@ export type DetectionContext = {
   zone?: string | null;
 };
 
+export type DetectionRun = {
+  detections: Detection[];
+  /** 'ok' | 'parse_error' | 'provider_error' — never treat a non-ok run as "all clear". */
+  status: "ok" | "parse_error" | "provider_error";
+  raw: string;
+  error?: string;
+};
+
 export interface DetectionProvider {
   id: string;
-  detect(frames: Frame[], ctx: DetectionContext): Promise<Detection[]>;
+  detect(frames: Frame[], ctx: DetectionContext): Promise<DetectionRun>;
 }
 
 const SYSTEM_PROMPT = `You are a video surveillance analytics engine for industrial and public sites.
