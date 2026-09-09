@@ -95,6 +95,8 @@ function parseDetections(raw: string, frames: Frame[]): ParseOutcome {
       },
     ];
   });
+
+  return { ok: true, detections };
 }
 
 function createCloudVisionProvider(apiKey: string): DetectionProvider {
