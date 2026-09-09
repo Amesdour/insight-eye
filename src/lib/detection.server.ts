@@ -57,17 +57,19 @@ Return an empty array when nothing of interest is visible. Never invent detectio
 
 type GatewayChoice = { message?: { content?: string } };
 
-function parseDetections(raw: string, frames: Frame[]): Detection[] {
+type ParseOutcome = { ok: boolean; detections: Detection[]; error?: string };
+
+function parseDetections(raw: string, frames: Frame[]): ParseOutcome {
   const match = raw.match(/\{[\s\S]*\}/);
-  if (!match) return [];
+  if (!match) return { ok: false, detections: [], error: "no JSON object in model response" };
   let parsed: unknown;
   try {
     parsed = JSON.parse(match[0]);
-  } catch {
-    return [];
+  } catch (e) {
+    return { ok: false, detections: [], error: `invalid JSON: ${(e as Error).message}` };
   }
   const list = (parsed as { detections?: unknown }).detections;
-  if (!Array.isArray(list)) return [];
+  if (!Array.isArray(list)) return { ok: false, detections: [], error: "missing detections array" };
   const allowedEntities: EntityType[] = ["person", "vehicle", "animal", "object"];
   const allowedSeverity: Severity[] = ["info", "warning", "critical"];
   const maxOffset = frames.length ? Math.max(...frames.map((f) => f.offset)) : 0;
