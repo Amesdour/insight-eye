@@ -133,7 +133,13 @@ Frames are given in order with their timestamp offsets in seconds: ${frames.map(
 
       const json = (await response.json()) as { choices?: GatewayChoice[] };
       const text = json.choices?.[0]?.message?.content ?? "";
-      return parseDetections(text, frames);
+      const outcome = parseDetections(text, frames);
+      return {
+        detections: outcome.detections,
+        status: outcome.ok ? "ok" : "parse_error",
+        raw: text.slice(0, 2000),
+        ...(outcome.error ? { error: outcome.error } : {}),
+      };
     },
   };
 }
